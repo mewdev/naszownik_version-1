@@ -1,0 +1,243 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+<Layout title="Quiz">
+	<main>
+        <div id="container" class="container p-5 mx-auto flex flex-col justify-center items-center h-screen gap-2">
+            
+            <div><p id="text" class="mt-4 font-light max-w-lg sm:text-4xl/relaxed"></p></div>
+            <div id="buttons"></div>
+               
+        </div>
+	</main>
+</Layout>
+
+
+<script>
+
+ /* ######
+API AND RENDERING DATA
+####### */
+
+// 1.FETCHER
+fetch("https://opensheet.elk.sh/1-E7BplZHFOEHda-jwT7ul075mq03ZFGAqHFVhyPvuCg/public")
+.then(res => res.json())
+.then(data => {
+    
+    
+// 2.RETURN CORRECT ANSWER OBJECT
+function getQuestionObject() {
+     const randomIndex = Math.floor(Math.random()*data.length)
+     const correctQuestion = data[randomIndex].word
+     const correctAnswer = data[randomIndex].meaning
+
+    // Shuffle function to shuffle the array
+    function shuffle(array) {
+        array.sort(() => Math.random() - 0.5);
+    }
+     
+     const questionObject = [
+            {question: correctQuestion,
+             answers: [
+                        {text: correctAnswer, correct: true},
+                        ...twoAnswers(),
+                        ]
+        }]
+
+                shuffle(questionObject[0].answers);
+                console.log(questionObject)    
+                return questionObject;
+        }
+        
+// 3.RETURN RANDOM ANSWER OBJECT
+function getRandomAnswer (){
+    let randomIndex = Math.floor(Math.random()*data.length)
+    let randomMeaning = data[randomIndex].meaning
+    return {text: randomMeaning, correct: false}
+}
+        
+// 4.RETURN TWO RANDOM FALSE ANSWERS OBJECT
+function twoAnswers(){
+    let answers = []
+    for (let i = 0; i < 2 ; i++){
+        const randomAnswer = getRandomAnswer().text
+        answers.push({ text: randomAnswer, correct:false})
+    }
+    return answers
+}
+
+ /* ######
+QUIZ GAME
+####### */
+
+// 1.LEVEL OBJECT
+const levelsArray = [
+    
+            {levelName: "lehki",
+            questionCount: 15},
+            
+            {levelName: "średni",
+            questionCount: 30},
+            
+            {levelName: "ciynżki",
+            questionCount: 50}
+            
+            ]
+
+// 2.CONSTS,LETS AND TARGETS
+
+    const containerEl = document.getElementById("container") // NEEDS TO STAY!
+    const buttonsEl = document.getElementById("buttons")
+    
+    let textEl // NEEDS TO STAY!
+    let stepSum // NEEDS TO STAY!
+    let stepCount // NEEDS TO STAY!
+    let message // NEEDS TO STAY!
+    let score
+
+// 3.HANDLE CLICK EVENT LISTENER
+    
+    containerEl.addEventListener("click", (e) => {
+        
+    const hasClass = e.target.classList.contains("check")
+    
+    if(e.target.id === "btn"){
+        
+    startQuiz(e)   
+      
+    } else if (hasClass){
+        
+    questionCheck(e)
+
+    } else if (stepCount > stepSum && e.target.id ==="next-btn") {
+        
+    renderResult();
+    
+    } else if (e.target.id === "next-btn") {
+        
+    renderQuestion();
+    }
+        
+        })
+    
+// 4. GAME MECHANICS FUNCTIONS
+
+// 4A. QUIZ SETTINGS
+
+function quizSettings() {
+
+    textEl = `<p>Jak ciynżki to chcesz?</p></div>`
+    
+    const buttons = levelsArray.map(level => {
+        return `<button class="block uppercase w-full bg-white rounded-lg px-12 py-3 text-xs font-medium text-gray-800 shadow-sm hover:bg-gray-800 hover:text-white duration-500 sm:w-auto" id="btn" data-level="${level.questionCount}">${level.levelName}</button>`
+    }).join('')
+    
+    containerEl.innerHTML = textEl + buttons
+          
+}
+
+// 4B. START QUIZ
+
+
+function startQuiz(e){
+    
+    score = 0
+    
+    stepCount = 1
+                            
+    stepSum = Number(e.target.dataset.level)
+    
+    renderQuestion()
+
+
+}
+
+
+function renderQuestion(){
+    
+    // GET RANDOM QUESTION OBJECT FROM API CALL
+    
+    const quizQuestion = getQuestionObject()
+    const hrClass = "border border-gray-300 w-16"
+    const btnClass = "transition ease-in-out check italic hover:font-bold hover:text-blue-500 duration:500"
+    
+    textEl = `<div class="bg-white w-fit px-4 py-1 rounded-xl uppercase text-xs text-gray-800 mb-8"><p>Pytani ${stepCount} / ${stepSum}</p></div>`
+
+    let question = quizQuestion[0].answers.map(question => {
+        return `<p class="text-4xl font-bold">${quizQuestion[0].question}</p><br><button class="${btnClass}" data-correct="${question.answers[0].correct}" id="${question.answers[0].text}">${question.answers[0].text}</button><hr class="${hrClass}"><button class="${btnClass}" data-correct="${question.answers[1].correct}" id="${question.answers[1].text}">${question.answers[1].text}</button><hr class="${hrClass}"><button class="${btnClass}" data-correct="${question.answers[2].correct}" id="${question.answers[2].text}">${question.answers[2].text}</button>`
+    })
+    
+    containerEl.innerHTML = textEl + question
+    
+}
+
+//4. RENDER RESULT        
+function renderResult(){
+    
+    textEl = `Mosz ${score} z ${stepSum}punktów`
+        
+    containerEl.innerHTML = textEl
+    
+}
+        
+        
+function questionCheck(e){
+    
+       function disableButtons(){
+        let buttonsDis = document.querySelectorAll(".check")
+            for (let buttons of buttonsDis){
+            buttons.disabled = true
+        }
+            }
+    
+    
+    let answButtons = document.getElementById(`${e.target.id}`)
+        
+        if(e.target.dataset.correct === "true") {
+
+        score++
+
+        answButtons.classList.add("text-emerald-600")
+        answButtons.classList.add("font-bold")
+        answButtons.classList.add("text-2xl")
+
+
+        } else if(e.target.dataset.correct === "false"){
+
+        answButtons.classList.add("text-rose-600")
+        answButtons.classList.add("font-bold")
+        answButtons.classList.add("text-2xl")
+        
+        } 
+      
+    renderNextButton()
+    disableButtons()
+     
+    } 
+
+
+function renderNextButton(){
+    let nextButton = document.createElement("button")
+    nextButton.setAttribute("id", "next-btn");
+    nextButton.className = "block uppercase w-full bg-white rounded-lg px-12 py-3 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-800 hover:text-white duration-500 sm:w-auto";
+    nextButton.innerText = "DALSZI"
+
+    nextButton.addEventListener("click", () => {
+        if (stepCount === stepSum) {
+            renderResult();
+        } else {
+            renderQuestion();
+        }
+        stepCount++;
+    });
+
+    containerEl.appendChild(nextButton);
+    
+}
+
+quizSettings()
+    
+})
+
+
+</script>

@@ -1,0 +1,70 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Naszownik - Dictionary of the Cieszyn Silesian dialect">
+	<main>
+<section>
+  <div class="flex flex-col h-screen justify-center relative mx-auto max-w-screen-xl px-6 py-32 sm:px-6 lg:flex lg:flex-col lg:justify-center lg:h-screen lg:items-start lg:px-8">
+
+
+      <div class="bg-gray-100 w-fit px-4 py-1 rounded-xl uppercase text-xs text-gray-800 mb-8 shadow-md"><p>Przez 4000 słówek 📚</p></div>
+
+
+  
+    <div class="max-w-xl text-left">
+      <h1 class="text-gray-800 text-5xl font-bold sm:text-6xl">A po naszymu umisz?
+      </h1>
+      <p class="text-gray-600 mt-4 font-light max-w-lg sm:text-xl/relaxed">
+        Interaktywny słownik gwary cieszyńskiej.
+      </p>
+
+      <div class="mt-8 flex flex-wrap gap-4 text-center">
+        <a
+          href="/quiz"
+          class="block uppercase w-full bg-blue-500 rounded-lg px-12 py-3 text-xs font-medium text-white shadow hover:bg-gray-800 duration-500 sm:w-auto"
+        >
+          Grać kwiz
+        </a>
+
+        <a
+          href="/search"
+          class="block uppercase w-full bg-white rounded-lg px-12 py-3 text-xs font-medium shadow hover:bg-gray-800 hover:text-white duration-500 focus:outline-none focus:ring sm:w-auto"
+        >
+          Słownik
+        </a>
+      </div>
+      </div>
+    </div>
+  </div>
+</section>
+	</main>
+</Layout>
+
+<script>
+
+getRandomWord()
+
+function getRandomWord(){
+
+fetch("https://opensheet.elk.sh/1-E7BplZHFOEHda-jwT7ul075mq03ZFGAqHFVhyPvuCg/public")
+        .then(res => res.json())
+        .then(data => {
+            const dataObjects = data
+            const dataObjectsIndex = Math.floor(Math.random()*dataObjects.length)
+            const randomObject = dataObjects[dataObjectsIndex]
+                          
+            const wordEl = document.getElementById("word")
+            const meaningEl = document.getElementById("meaning")
+            const btnEl = document.getElementById("btn")
+            
+            wordEl.innerText = randomObject.word
+            meaningEl.innerText = randomObject.meaning
+                 
+            })
+    }
+
+document.getElementById("btn").addEventListener("click", getRandomWord)
+
+
+</script>

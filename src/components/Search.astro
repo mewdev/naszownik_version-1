@@ -1,0 +1,66 @@
+---
+
+---
+
+  <div class="pt-0 fixed top-0 z-10 mx-auto text-gray-600 shadow-xl">
+    <div class="flex relative">
+        <input class="border-b border-gray-800 bg-white w-screen h-14 pl-5 pr-10 text-sm focus:outline-none appearance-none" type="search" name="search" placeholder="Wyhledej cosik..." id="search" data-search>
+        <span class="absolute top-1/2 transform -translate-y-1/2 right-6">
+            <i class="fa-solid fa-magnifying-glass"></i>
+        </span>
+    </div>
+</div>
+        
+        <div class="mt-14" data-user-cards-container></div>
+        <template data-user-template>
+        <div class="results" data-user-cards-container>
+            <div class="text-gray-800 transition ease-in-out result py-8 px-5 border border-gray-400 hover:bg-gray-800 hover:text-white duration-500">
+                <div class="text-gray-800 hover:text-white text-4xl font-bold"data-word></div>
+                <div class="italic font-light"data-meaning></div>
+            </div>
+        </div>
+        </template>
+
+<script>
+
+
+const userTemplate = document.querySelector("[data-user-template]")
+const userCardContainer = document.querySelector("[data-user-cards-container]")
+const searchInput = document.querySelector("[data-search]")
+
+let users = []
+
+searchInput.addEventListener("input", function(e){
+    const value = e.target.value
+    users.forEach(user => {
+        const isVisible = user.word.includes(value) || user.meaning.includes(value)
+        user.element.classList.toggle("hidden", !isVisible)
+    })
+})
+
+fetch("https://opensheet.elk.sh/1-E7BplZHFOEHda-jwT7ul075mq03ZFGAqHFVhyPvuCg/public")
+.then (res => res.json())
+.then (data => {
+    
+    users = data.map(user => {
+        const card = userTemplate.content.cloneNode(true).children[0]
+        const word = card.querySelector("[data-word]")
+        const meaning = card.querySelector("[data-meaning]")
+        word.textContent = user.word
+        meaning.textContent = user.meaning
+        userCardContainer.append(card)
+        return { word: user.word, meaning: user.meaning, element: card }
+    })
+
+    
+    })
+
+</script>
+
+
+<style>
+
+.hide{
+    display:none;
+}
+</style>
